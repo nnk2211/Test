@@ -1,0 +1,26 @@
+Yes, that’s a clean and practical way to do it.
+
+You can:
+
+1. Update the existing test description to:
+
+'stack should have one public hosted zone with tags and query logging configured correctly'
+
+
+2. Add this just below the existing hasResourceProperties() call:
+
+template.hasResourceProperties('AWS::Route53::HostedZone', {
+  QueryLoggingConfig: {
+    CloudWatchLogsLogGroupArn: {
+      'Fn::GetAtt': [
+        expect.stringMatching(/^emberRoute53QueryLogs/),
+        'Arn',
+      ],
+    },
+  },
+});
+
+
+
+This keeps things readable, grouped by resource type, and avoids bloating the test file with an extra test case just for this.
+
