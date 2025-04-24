@@ -1,0 +1,8 @@
+await slalXior.post(logoutApiEndpoint, {
+  json: { csrfToken },
+  headers: {
+    Cookie: updatedCookieString,
+    // Explicitly force full body to be sent immediately
+    'Content-Length': Buffer.byteLength(JSON.stringify({ csrfToken })).toString(),
+  },
+});
