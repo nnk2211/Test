@@ -24,3 +24,8 @@ template.hasResourceProperties('AWS::Route53::HostedZone', {
 
 This keeps things readable, grouped by resource type, and avoids bloating the test file with an extra test case just for this.
 
+template.hasResourceProperties('AWS::Route53::HostedZone', {
+  QueryLoggingConfig: {
+    CloudWatchLogsLogGroupArn: expect.stringMatching(/^emberRoute53QueryLogsGroupus-east-1/),
+  },
+});
