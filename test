@@ -29,3 +29,14 @@ template.hasResourceProperties('AWS::Route53::HostedZone', {
     CloudWatchLogsLogGroupArn: expect.stringMatching(/^emberRoute53QueryLogsGroupus-east-1/),
   },
 });
+
+template.hasResourceProperties('AWS::Route53::HostedZone', {
+  QueryLoggingConfig: {
+    CloudWatchLogsLogGroupArn: {
+      'Fn::GetAtt': [
+        expect.stringMatching(/Route53QueryLogsLogGroup/),
+        'Arn',
+      ],
+    },
+  },
+});
