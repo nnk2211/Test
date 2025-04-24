@@ -167,3 +167,15 @@ No need: Skip DependsOn testing unless you're using CfnHostedZone and CfnResourc
 
 Let me know if you want the full test block written out.
 
+
+template.hasResourceProperties('AWS::Logs::ResourcePolicy', {
+  PolicyName: 'Route53QueryLoggingPolicy',
+  PolicyDocument: {
+    'Fn::Join': Match.arrayWith([
+      Match.stringLikeRegexp('logs:CreateLogStream'),
+      Match.stringLikeRegexp('logs:PutLogEvents'),
+      Match.stringLikeRegexp('route53.amazonaws.com'),
+    ])
+  }
+});
+
