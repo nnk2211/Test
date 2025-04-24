@@ -29,3 +29,12 @@ This ensures changes from shared dependencies are also accounted for without har
 
 Let me know if you want to tag or link related tickets.
 
+
+Here's a concise and clear PR title:
+
+refactor(ci): run E2E tests only when dashboard or backend output changes
+
+Let me know if you want to include the ticket ID or environment reference.
+
+
+
