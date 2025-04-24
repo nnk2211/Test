@@ -40,3 +40,9 @@ template.hasResourceProperties('AWS::Route53::HostedZone', {
     },
   },
 });
+
+
+'Fn::GetAtt': [
+  Match.stringLikeRegexp('emberRoute53QueryLogsLogGroupuseast1[A-Z\\d]{8}'),
+  'Arn'
+]
