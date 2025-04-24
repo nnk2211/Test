@@ -238,3 +238,16 @@ Your test is clean, minimal, and covers the whole flow. You don’t need to brea
 
 You can proudly demo this! Let me know if you need a comment block or test title description for docs or PR.
 
+Here’s a simple and clear reply you can use:
+
+
+---
+
+Actually, since CfnResourcePolicy is an L1 construct, the policyDocument needs to be a string as per the documentation – AWS Docs.
+I tried using a raw object without JSON.stringify, but it threw an error saying it must be a string. So had to keep it as JSON.stringify(...) to make it work.
+
+
+---
+
+Let me know if you want a shorter or more formal version!
+
