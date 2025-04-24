@@ -182,3 +182,59 @@ template.hasResourceProperties('AWS::Logs::ResourcePolicy', {
 template.hasResourceProperties('AWS::Logs::ResourcePolicy', {
   PolicyName: 'Route53QueryLoggingPolicy'
 });
+
+Yes — this test case is clear, well-structured, and covers the key expectations for the Route 53 query logging flow. Here's a quick validation + minor optional refinements:
+
+
+---
+
+What you're covering (well done):
+
+Hosted zone creation: validateStackResource(...) confirms the hosted zone exists.
+
+Log group attached: Validates QueryLoggingConfig.CloudWatchLogsLogGroupArn with a regex.
+
+Resource policy added: Verifies the Route53QueryLoggingPolicy was created.
+
+Dependency order: Ensures DependsOn is set for the hosted zone (good catch).
+
+
+
+---
+
+✅ Looks optimized already.
+
+Minor suggestions (optional):
+
+1. Group logically (add spacing):
+
+// Validate hosted zone resource
+validateStackResource(...)
+
+// Check query logging ARN
+template.hasResourceProperties(...)
+
+// Check log group resource policy exists
+template.hasResourceProperties(...)
+
+// Ensure hosted zone waits for resource policy
+const hostedZones = ...
+const hostedZone = ...
+expect(...).toContain(...)
+
+
+2. Test name tweak (more readable):
+
+test('public hosted zone should have query logging, resource policy, and correct dependency order', ...)
+
+
+
+
+---
+
+Overall:
+
+Your test is clean, minimal, and covers the whole flow. You don’t need to break it down unless test clarity or rerun granularity becomes a concern.
+
+You can proudly demo this! Let me know if you need a comment block or test title description for docs or PR.
+
