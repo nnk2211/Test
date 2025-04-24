@@ -6,3 +6,26 @@ await slalXior.post(logoutApiEndpoint, {
     'Content-Length': Buffer.byteLength(JSON.stringify({ csrfToken })).toString(),
   },
 });
+
+
+
+Here you go:
+
+Commit Message:
+
+refactor(ci): run E2E pipeline only on actual dashboard or backend changes
+
+PR Description:
+
+Optimized the E2E pipeline to avoid unnecessary test runs by detecting actual build output changes in dashboard and backend apps.
+
+- Added hash-based comparison using existing tagVersion script
+- Runs E2E tests only if:
+  - PR is approved **and**
+  - Dashboard or backend output has changed
+- Supports manual and scheduled triggers regardless of change
+
+This ensures changes from shared dependencies are also accounted for without hardcoding paths.
+
+Let me know if you want to tag or link related tickets.
+
