@@ -1,0 +1,107 @@
+Sure! Here’s the combined GitHub Actions job block for both Dashboard and Backend build + hash comparison + version detection, customized for your E2E test pipeline use case — without tagging or artifact upload, just the change detection part:
+
+
+---
+
+Full Refactored Script (E2E Test Change Detection)
+
+jobs:
+  detect-dashboard-changes:
+    name: Detect Dashboard Changes
+    runs-on: ubuntu-latest
+    outputs:
+      dashboard-changed: ${{ steps.set-output.outputs.dashboardChanged }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build dashboard for hash comparison
+        run: pnpm turbo run build --filter=@ember/dashboard --cache-dir=.turbo
+
+      - name: Detect changes in dashboard build
+        id: set-output
+        run: |
+          dashboardHash=$(find ./apps/dashboard/dist -type f -exec shasum -a 1 {} \; | sort | shasum -a 1 | cut -d' ' -f1)
+          echo "dashboardHash=${dashboardHash}" >> $GITHUB_ENV
+          output=$(pnpm --filter scripts tagVersion dashboard "$dashboardHash")
+          echo "$output"
+          exit_code=$?
+          if [ $exit_code -eq 0 ]; then
+            newVersion=$(echo "$output" | tail -n 1)
+            if [[ "$newVersion" == "Unchanged" ]]; then
+              echo "dashboardChanged=" >> $GITHUB_OUTPUT
+            else
+              echo "dashboardChanged=changed" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "Dashboard hash comparison failed"
+            exit 1
+          fi
+
+  detect-backend-changes:
+    name: Detect Backend Changes
+    runs-on: ubuntu-latest
+    outputs:
+      backend-changed: ${{ steps.set-output.outputs.backendChanged }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build backend for hash comparison
+        run: pnpm --filter back-end build
+
+      - name: Detect changes in backend build
+        id: set-output
+        run: |
+          backendHash=$(find ./apps/back-end/dist -type f -exec shasum -a 1 {} \; | sort | shasum -a 1 | cut -d' ' -f1)
+          echo "backendHash=${backendHash}" >> $GITHUB_ENV
+          output=$(pnpm --filter scripts tagVersion be "$backendHash")
+          echo "$output"
+          exit_code=$?
+          if [ $exit_code -eq 0 ]; then
+            newVersion=$(echo "$output" | tail -n 1)
+            if [[ "$newVersion" == "Unchanged" ]]; then
+              echo "backendChanged=" >> $GITHUB_OUTPUT
+            else
+              echo "backendChanged=changed" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "Backend hash comparison failed"
+            exit 1
+          fi
+
+
+---
+
+How to Use These Outputs
+
+In your actual e2e-test job, you can conditionally run it like this:
+
+e2e-test:
+    needs: [detect-dashboard-changes, detect-backend-changes]
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'schedule' ||
+      (
+        github.event_name == 'pull_request_review' &&
+        github.event.review.state == 'approved' &&
+        (
+          needs.detect-dashboard-changes.outputs.dashboard-changed == 'changed' ||
+          needs.detect-backend-changes.outputs.backend-changed == 'changed'
+        )
+      )
+    ...
+
+This ensures:
+
+You always run the test if it's scheduled or manually dispatched.
+
+You only run E2E tests on PR approval if either frontend or backend actually changed.
+
+
+Let me know if you want a consolidated version with test execution logic too.
+
