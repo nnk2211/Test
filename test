@@ -46,3 +46,60 @@ template.hasResourceProperties('AWS::Route53::HostedZone', {
   Match.stringLikeRegexp('emberRoute53QueryLogsLogGroupuseast1[A-Z\\d]{8}'),
   'Arn'
 ]
+
+Yes, your plan is spot on — and that inline code snippet is perfect.
+
+Here’s a quick recap of what you said (with slight polish):
+
+
+---
+
+Test Code (inline in test file)
+
+const hostedZones = template.findResources('AWS::Route53::HostedZone');
+const hostedZone = Object.values(hostedZones)[0];
+
+expect(hostedZone.DependsOn).toContain('Route53LogGroupAccess');
+
+
+---
+
+Test Structure Suggestion
+
+You can write a separate test like this:
+
+test('query logging should be configured correctly with log group and resource policy dependency', () => {
+  const hostedZones = template.findResources('AWS::Route53::HostedZone');
+  const hostedZone = Object.values(hostedZones)[0];
+
+  // Check query logging config
+  expect(hostedZone.Properties?.QueryLoggingConfig?.CloudWatchLogsLogGroupArn).toMatchObject({
+    'Fn::GetAtt': [
+      expect.stringMatching(/emberRoute53QueryLogsLogGroup/),
+      'Arn'
+    ]
+  });
+
+  // Check DependsOn is set correctly
+  expect(hostedZone.DependsOn).toContain('Route53LogGroupAccess');
+});
+
+
+---
+
+Why this works:
+
+Keeps the assertion logic close to where it’s tested (easy for reviewers).
+
+Verifies both:
+
+Route53 HostedZone has correct logging config.
+
+DependsOn ensures the resource policy exists before the zone.
+
+
+Complements the existing hasResourceProperties and validateStackResource checks without duplicating.
+
+
+Let me know if you want a reusable version later or want to inline all for now!
+
