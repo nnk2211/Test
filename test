@@ -103,3 +103,67 @@ Complements the existing hasResourceProperties and validateStackResource checks 
 
 Let me know if you want a reusable version later or want to inline all for now!
 
+Great question. Here's the clear breakdown:
+
+
+---
+
+1. Can we test the CfnResourcePolicy?
+
+Yes, absolutely.
+
+You can write a test like this:
+
+validateStackResource(template, 'AWS::Logs::ResourcePolicy', /Route53QueryLoggingPolicy/, 1, 0);
+
+template.hasResourceProperties('AWS::Logs::ResourcePolicy', {
+  PolicyName: 'Route53QueryLoggingPolicy',
+  PolicyDocument: {
+    Statement: [
+      {
+        Sid: 'AllowRoute53QueryLogging',
+        Effect: 'Allow',
+        Principal: {
+          Service: 'route53.amazonaws.com',
+        },
+        Action: [
+          'logs:CreateLogStream',
+          'logs:PutLogEvents',
+        ],
+        Resource: {
+          'Fn::GetAtt': [
+            Match.stringLikeRegexp('.*QueryLogsLogGroup.*'),
+            'Arn',
+          ],
+        },
+      },
+    ],
+  },
+});
+
+
+---
+
+2. Can we test .node.addDependency() or DependsOn?
+
+Not directly through hasResourceProperties, because:
+
+CDK's high-level synth doesn’t expose DependsOn unless explicitly added via Cfn* constructs.
+
+.node.addDependency() influences resource order in CloudFormation, but doesn’t surface as a template property.
+
+
+Alternative: You can test the order indirectly by asserting both resources exist and trusting .node.addDependency() does its job (since it’s CDK’s intended way).
+
+
+---
+
+Recommendation:
+
+Yes: Write a test for CfnResourcePolicy.
+
+No need: Skip DependsOn testing unless you're using CfnHostedZone and CfnResourcePolicy with raw overrides.
+
+
+Let me know if you want the full test block written out.
+
