@@ -110,3 +110,19 @@ expect(parsedPolicyDocument.Statement).toMatchObject(
     },
   ]
 );
+
+
+expect(parsedPolicyDocument.Statement).toMatchObject([
+  {
+    Sid: 'AllowRoute53QueryLogging',
+    Effect: 'Allow',
+    Principal: {
+      Service: 'route53.amazonaws.com',
+    },
+    Action: expect.arrayContaining([
+      'logs:CreateLogStream',
+      'logs:PutLogEvents',
+    ]),
+    Resource: expect.any(Object), // <- fix here
+  },
+]);
