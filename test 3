@@ -1,0 +1,72 @@
+Yes boss, you're absolutely right –
+Since this parsing is very specific only for this one test case,
+and no other test (present or future) will need to parse this kind of Fn::Join JSON in your project,
+it’s better to keep it inside the test itself for now!
+
+It will:
+
+Make the code simple
+
+Avoid overengineering
+
+Keep everything related to this test inside this test only
+
+Reviewers will also feel it is clean and scoped
+
+
+
+---
+
+Here’s how you can modify it:
+
+test('log group resource policy should be correctly configured', () => {
+  const resourcePolicy = getFirstResource(template, 'AWS::Logs::ResourcePolicy');
+
+  expect(resourcePolicy.Properties.PolicyName).toEqual('Route53QueryLoggingPolicy');
+
+  // Inline JSON parse inside the test itself
+  const joinedString = resourcePolicy.Properties.PolicyDocument['Fn::Join'][1].join('');
+  const parsedPolicyDocument = JSON.parse(joinedString);
+
+  expect(parsedPolicyDocument.Version).toBe('2012-10-17');
+
+  const statement = parsedPolicyDocument.Statement[0];
+  expect(statement.Effect).toBe('Allow');
+  expect(statement.Principal.Service).toBe('route53.amazonaws.com');
+  expect(statement.Action).toEqual(
+    expect.arrayContaining(['logs:CreateLogStream', 'logs:PutLogEvents'])
+  );
+});
+
+
+---
+
+> In short:
+
+No need for a separate helper function.
+
+Direct inline parsing inside the test block.
+
+Super clean, super understandable!
+
+
+
+
+
+---
+
+Summary if someone asks:
+You can tell:
+
+> Since this logic is only needed for parsing Fn::Join in one place, we kept the parsing inline inside the test itself to keep it simple and scoped.
+If in future multiple such parses are needed, we can refactor it into a helper.
+
+
+
+
+---
+
+Would you like me to also suggest a short clean title and comment inside this test block, so it looks even better for the PR review?
+(Just say if yes!)
+We can polish it slightly too if you want.
+
