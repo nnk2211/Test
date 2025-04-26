@@ -70,3 +70,25 @@ Would you like me to also suggest a short clean title and comment inside this te
 (Just say if yes!)
 We can polish it slightly too if you want.
 
+
+
+import { Match } from 'aws-cdk-lib/assertions';
+
+// After parsing policyDoc...
+
+expect(parsed.PolicyDocument.Statement).toEqual(
+  Match.arrayWith([
+    Match.objectLike({
+      Sid: 'AllowRoute53QueryLogging',
+      Effect: 'Allow',
+      Principal: {
+        Service: 'route53.amazonaws.com'
+      },
+      Action: Match.arrayWith([
+        'logs:CreateLogStream',
+        'logs:PutLogEvents'
+      ]),
+      // You can optionally validate 'Resource' is any string separately if you want
+    })
+  ])
+);
