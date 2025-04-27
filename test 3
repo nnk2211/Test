@@ -154,3 +154,36 @@ Would you also like an even one-line shorter version if you need it even more co
 But the above is very professional already!
 Shall I give the ultra-short too?
 
+
+test('public hosted zone should have log group resource policy configured correctly', () => {
+  // Fetch the first created ResourcePolicy resource
+  const resourcePolicy = getFirstResource(
+    template,
+    'AWS::Logs::ResourcePolicy',
+  );
+
+  // Validate the resource policy name
+  expect(resourcePolicy.Properties.PolicyName).toEqual('Route53DnsLoggingResourcePolicy');
+
+  // Inline JSON parse for PolicyDocument which is stored as a Fn::Join string
+  const joinedString = resourcePolicy.Properties.PolicyDocument['Fn::Join'][1].join('');
+  const parsedPolicyDocument = JSON.parse(joinedString);
+
+  // Validate the policy document structure and fields
+  expect(parsedPolicyDocument.Version).toBe('2012-10-17');
+  expect(parsedPolicyDocument.Statement).toMatchObject([
+    {
+      Sid: 'AllowRoute53DnsLogging',
+      Effect: 'Allow',
+      Principal: {
+        Service: 'route53.amazonaws.com',
+      },
+      Action: expect.arrayContaining([
+        'logs:CreateLogStream',
+        'logs:PutLogEvents',
+      ]),
+      Resource: expect.anything(), // We allow any value here because it's dynamically generated
+    },
+  ]);
+});
+
