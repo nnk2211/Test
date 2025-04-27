@@ -187,3 +187,22 @@ test('public hosted zone should have log group resource policy configured correc
   ]);
 });
 
+expect(parsedPolicyDocument.Statement).toMatchObject([
+  {
+    Sid: 'AllowRoute53DnsLogging',
+    Effect: 'Allow',
+    Principal: {
+      Service: 'route53.amazonaws.com',
+    },
+    Action: expect.arrayContaining([
+      'logs:CreateLogStream',
+      'logs:PutLogEvents',
+    ]),
+    Resource: expect.anything(),
+    Condition: {
+      StringEquals: {
+        'aws:SourceAccount': expect.any(String),
+      },
+    },
+  },
+]);
