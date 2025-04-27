@@ -134,3 +134,23 @@ Resource: Match.objectLike({
     "Arn"
   ])
 })
+
+
+Here’s a short and clean PR comment for you:
+
+
+---
+
+PR Comment:
+
+Addressed the earlier feedback by adding a dedicated test for the resource policy.
+Initially skipped detailed validation because the policy was defined via a JSON.stringify, making direct checks tricky.
+Now handled it by parsing the Fn::Join output and validating key fields (Sid, Effect, Principal, Action, Resource) using toMatchObject and expect.arrayContaining as appropriate.
+
+
+---
+
+Would you also like an even one-line shorter version if you need it even more compact? (Optional)
+But the above is very professional already!
+Shall I give the ultra-short too?
+
