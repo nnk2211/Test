@@ -126,3 +126,11 @@ expect(parsedPolicyDocument.Statement).toMatchObject([
     Resource: expect.any(Object), // <- fix here
   },
 ]);
+
+
+Resource: Match.objectLike({
+  "Fn::GetAtt": Match.arrayWith([
+    Match.stringLikeRegexp('Route53QueryLogsGroup'),
+    "Arn"
+  ])
+})
