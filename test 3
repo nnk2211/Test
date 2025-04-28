@@ -266,3 +266,68 @@ beforeAll(() => {
 
   template = Template.fromStack(stack);
 });
+
+
+import { App, Stack } from 'aws-cdk-lib';
+import { Template } from 'aws-cdk-lib/assertions';
+import { Topic } from 'aws-cdk-lib/aws-sns';
+import { beforeAll, describe, test } from 'vitest';
+import { EU_WEST_1 } from '../../lib/constants';
+import { validateStackResource } from '../stackTestUtils';
+import { AppInsightsStack } from '../applicationInsights-stack';
+
+describe('Application Insights stack', () => {
+  let template: Template;
+
+  beforeAll(() => {
+    const app = new App();
+    const testStack = new Stack(app, 'TestStack');
+
+    const snsAlertsTopic = new Topic(testStack, 'MockSnsTopic');
+
+    const stack = new AppInsightsStack({
+      scope: testStack,
+      id: 'AppInsightsStack',
+      baseStackProps: {
+        env: { account: '980688131692', region: EU_WEST_1 },
+        stackType: 'regional',
+      },
+      snsAlertsTopic,
+    });
+
+    template = Template.fromStack(stack);
+  });
+
+  test('should create AWS resource group correctly', () => {
+    validateStackResource(template, 'AWS::ResourceGroups::Group', 'EmberAppInsightsResourceGroupeuwest1', 1, 0);
+
+    template.hasResourceProperties('AWS::ResourceGroups::Group', {
+      Name: 'Ember-AppInsights-eu-west-1',
+      ResourceQuery: {
+        Type: 'TAG_FILTERS_1_0',
+        Query: {
+          ResourceTypeFilters: ['AWS::AllSupported'],
+          TagFilters: [
+            {
+              Key: 'AppInsightsMonitoringEnabled',
+              Values: ['True'],
+            },
+          ],
+        },
+      },
+    });
+  });
+
+  test('should create AWS Application Insights correctly', () => {
+    validateStackResource(template, 'AWS::ApplicationInsights::Application', 'EmberAppInsightsResourceGroupeuwest1', 1, 0);
+
+    template.hasResourceProperties('AWS::ApplicationInsights::Application', {
+      AttachMissingPermission: true,
+      AutoConfigurationEnabled: true,
+      CWEMonitorEnabled: true,
+      OpsCenterEnabled: true,
+      SNSNotificationArn: expect.stringMatching(/^arn:aws:sns:[a-z\-0-9]+:[0-9]{12}:.+/),
+      ResourceGroupName: 'Ember-AppInsights-eu-west-1',
+    });
+  });
+});
