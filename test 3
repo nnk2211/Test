@@ -407,3 +407,11 @@ SNSNotificationArn: Match.objectLike({
  * - Mocks SNS Topic creation with topicName for cross-environment compatibility.
  * - Verifies Resource Group and ApplicationInsights resource properties including strict ARN structure.
  */
+
+
+/**
+ * Unit test for Monitoring CDK stack.
+ *
+ * - Mocks SNS Topic creation with a fixed topicName to avoid cross-environment issues.
+ * - Verifies CloudWatch Alarm resource and strict AlarmActions structure matching.
+ */
