@@ -1,0 +1,71 @@
+// apps/back-end/src/services/wrappers/logout.ts
+
+import https from 'https';
+import { URL } from 'url';
+import type { XiorInstance } from 'xior';
+import { XRay } from '../../utils/xray';   // adjust the import based on your project
+
+export async function performLogout(
+  slalXior: XiorInstance,
+  csrfCookie: string | undefined,
+  csrfTokenValue: string | undefined,
+) {
+  const logoutApiEndpoint = '/secure/customer-platform/rest/api/logout';
+  const subSegment = XRay.addNewSubSegment(`call to ${logoutApiEndpoint}`);
+
+  try {
+    // 1️⃣ Pull base URL and existing cookies from your configured slalXior
+    const base = new URL(slalXior.defaults.baseURL ?? '');
+    const url = new URL(logoutApiEndpoint, base);
+
+    const existingCookies = String((slalXior.defaults.headers as any)?.Cookie || '').trim().replace(/;*$/, '');
+    const updatedCookieHeader = existingCookies
+      ? `${existingCookies}; CSRF=${csrfCookie}`
+      : `CSRF=${csrfCookie}`;
+
+    const bodyObject = { csrfToken: csrfTokenValue };
+    const bodyString = JSON.stringify(bodyObject);
+    const bodyLength = Buffer.byteLength(bodyString);
+
+    // 2️⃣ Make a raw HTTPS request
+    await new Promise<void>((resolve, reject) => {
+      const req = https.request(
+        {
+          protocol: url.protocol,
+          hostname: url.hostname,
+          port: url.port || 443,
+          path: url.pathname,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': bodyLength.toString(),
+            'Cookie': updatedCookieHeader,
+          },
+        },
+        (res) => {
+          const status = res.statusCode ?? 0;
+          subSegment.addMetadata('SLAL Customer platform logout API response status code', status);
+
+          if (status >= 200 && status < 300) {
+            resolve();
+          } else {
+            reject(new Error(`SLAL logout failed with HTTP ${status}`));
+          }
+        },
+      );
+
+      // Swallow any interim 1xx responses (like 100 Continue)
+      req.on('information', () => { /* Ignored */ });
+      req.on('error', reject);
+
+      req.write(bodyString);
+      req.end();
+    });
+
+  } catch (error) {
+    XRay.addError(subSegment, error as Error);
+    throw error;
+  } finally {
+    XRay.closeSubSegment(subSegment);
+  }
+}
