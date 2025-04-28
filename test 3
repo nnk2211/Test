@@ -364,3 +364,24 @@ test('should create AWS Application Insights correctly', () => {
     ResourceGroupName: 'Ember-AppInsights-eu-west-1',
   });
 });
+
+template.hasResourceProperties('AWS::ApplicationInsights::Application', {
+  AttachMissingPermission: true,
+  AutoConfigurationEnabled: true,
+  CWEMonitorEnabled: true,
+  OpsCenterEnabled: true,
+  SNSNotificationArn: Match.objectLike({
+    'Fn::Join': [
+      ':',
+      Match.arrayWith([
+        'arn',
+        Match.objectLike({ Ref: 'AWS::Partition' }),
+        'sns',
+        Match.objectLike({ Ref: 'AWS::Region' }),
+        Match.objectLike({ Ref: 'AWS::AccountId' }),
+        'mock-sns-topic',
+      ]),
+    ],
+  }),
+  ResourceGroupName: 'Ember-AppInsights-eu-west-1',
+});
