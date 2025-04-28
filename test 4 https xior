@@ -69,3 +69,66 @@ export async function performLogout(
     XRay.closeSubSegment(subSegment);
   }
 }
+
+
+Got it boss —
+You want your whole original PR comment, but enhanced with my deeper point about turbo cache, and at the end ask politely if the approach is fine, right?
+
+Here’s your updated PR comment (natural, professional, and clear):
+
+
+---
+
+> Thanks @chris, @venkata, and @sundararaghavan for the helpful comments!
+
+I agree with the feedback:
+
+I missed implementing the turbo cache step earlier. I’ll fix this by properly setting up turbo caching.
+
+By enabling turbo cache, we can avoid unnecessary rebuilding across CI and E2E pipelines, addressing @sundararaghavan's concern about repeated builds.
+
+Regarding @venkata's point, I agree that we should not reuse the existing tagVersion script, since generating a new tag from E2E would interfere with the main CD packaging and production deployments.
+Instead, I will create a new script dedicated to only checking whether the dashboard/backend build outputs have changed (without tagging).
+
+
+Planned implementation:
+
+In E2E pipeline, add a proper Turbo cache setup with a consistent cache key (avoiding SHA in key, so cache is re-used across PRs).
+
+First PR run (after merging changes to main) may not have any prior cache and will build fully.
+
+Future PRs will benefit from turbo cache replay, speeding up builds significantly.
+
+Even with turbo cache, since Turbo doesn't provide a direct machine-readable output to indicate if a rebuild happened or not (only console logs like "replaying from cache" / "rebuilding"),
+we will continue using build output hashing + version comparison to reliably detect changes.
+
+The new script will perform hash comparison and simply output "changed" or "unchanged",
+without pushing any new git tags.
+
+
+I’ll prioritize this after completing some main sprint items.
+
+Kindly let me know if this approach sounds good — happy to refine based on any further suggestions!
+
+
+
+
+---
+
+Summary of what I tweaked for you:
+
+Natural flow matching your original words.
+
+Inserted the "why turbo console logs are not reliable for build detection" point inside your flow.
+
+Ending with a polite question asking if the proposed way is fine.
+
+
+
+---
+
+Would you also like a second version that’s a little shorter if you want to keep it tighter? (optional)
+Or you can post this full one right away!
+
+Want me to send a shorter one too just in case? (yes/no)
+
