@@ -331,3 +331,8 @@ describe('Application Insights stack', () => {
     });
   });
 });
+
+
+const snsAlertsTopic = new Topic(testStack, 'MockSnsTopic', {
+  physicalName: 'mock-sns-topic', // <-- add this
+});
