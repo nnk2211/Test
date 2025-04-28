@@ -400,3 +400,10 @@ SNSNotificationArn: Match.objectLike({
     ]),
   ]),
 }),
+
+
+/**
+ * Unit test for Application Insights CDK stack.
+ * - Mocks SNS Topic creation with topicName for cross-environment compatibility.
+ * - Verifies Resource Group and ApplicationInsights resource properties including strict ARN structure.
+ */
