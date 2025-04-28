@@ -206,3 +206,21 @@ expect(parsedPolicyDocument.Statement).toMatchObject([
     },
   },
 ]);
+
+
+
+beforeAll(() => {
+  const app = new App();
+
+  const defaultAccount = '980688131692';
+  process.env.CDK_DEFAULT_REGION = EU_WEST_1;
+
+  const snsAlertsTopic = new Topic(app, 'MockSnsTopic');
+
+  const stack = new AppInsightsStack(app, 'AppInsightsStack', {
+    env: { account: defaultAccount, region: EU_WEST_1 },
+    stackType: 'regional',
+  }, snsAlertsTopic);
+
+  template = Template.fromStack(stack);
+});
