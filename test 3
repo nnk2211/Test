@@ -385,3 +385,18 @@ template.hasResourceProperties('AWS::ApplicationInsights::Application', {
   }),
   ResourceGroupName: 'Ember-AppInsights-eu-west-1',
 });
+
+
+SNSNotificationArn: Match.objectLike({
+  'Fn::Join': Match.arrayWith([
+    ':',
+    Match.arrayWith([
+      'arn',
+      Match.objectLike({ Ref: 'AWS::Partition' }),
+      'sns',
+      Match.objectLike({ Ref: 'AWS::Region' }),
+      Match.objectLike({ Ref: 'AWS::AccountId' }),
+      'mock-sns-topic',
+    ]),
+  ]),
+}),
