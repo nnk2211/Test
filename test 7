@@ -43,3 +43,9 @@ Summary:
 These screenshots collectively confirm that Route 53 DNS query logging has been enabled correctly, logs are being streamed to the configured CloudWatch log group, and DNS queries are being captured in real time — validating successful implementation and end-to-end functionality.
 
 
+Sure, here's a concise Jira comment you can use:
+
+> Attached the test evidence report for reference. It includes screenshots verifying the Route 53 query logging configuration and CloudWatch log delivery. Let me know if anything else is needed.
+
+
+
