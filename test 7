@@ -6,3 +6,40 @@ Here’s a simple and clear sentence you can use to start your test evidence doc
 
 Let me know if you want this reworded for Jira or Confluence format.
 
+
+Perfect. Here's how you can label each screenshot clearly and then wrap it up with a short test evidence description.
+
+
+---
+
+Test Evidence for Route 53 DNS Query Logging via CloudWatch
+
+1. Screenshot 1: Title: Route 53 Hosted Zone – Query Logging Enabled
+Caption: Confirms that the public hosted zone has query logging enabled with the specified log group ARN.
+
+
+2. Screenshot 2: Title: Hosted Zone Logging Configuration Details
+Caption: Shows detailed config of query logging, including the linked CloudWatch Logs ARN.
+
+
+3. Screenshot 3: Title: CloudWatch Log Group Confirmation
+Caption: Verifies the expected log group (/aws/route53/...) has been created and is active.
+
+
+4. Screenshot 4: Title: Log Streams Under the Log Group
+Caption: Displays log streams being created within the CloudWatch log group, confirming active traffic logging.
+
+
+5. Screenshot 5: Title: Log Stream with DNS Query Logs
+Caption: Sample log stream entry showing DNS query events captured and logged successfully.
+
+
+
+
+---
+
+Summary:
+
+These screenshots collectively confirm that Route 53 DNS query logging has been enabled correctly, logs are being streamed to the configured CloudWatch log group, and DNS queries are being captured in real time — validating successful implementation and end-to-end functionality.
+
+
