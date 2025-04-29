@@ -48,4 +48,9 @@ Sure, here's a concise Jira comment you can use:
 > Attached the test evidence report for reference. It includes screenshots verifying the Route 53 query logging configuration and CloudWatch log delivery. Let me know if anything else is needed.
 
 
+mockApp.notFound((c) => {
+  console.error('Route not found:', c.req.path);
+  return c.text('Not Found', 404);
+});
+
 
