@@ -1,0 +1,97 @@
+Great! Based on your existing test style for the CSRF token handler and your current handlePOSTLogout handler implementation, here's a unit test file that matches your current structure and logic using Vitest:
+
+
+---
+
+post-logout.test.ts (place beside post-logout.ts)
+
+import { describe, test, expect, beforeAll, vi } from 'vitest'
+import { createApp } from 'hono/factory'
+import { getCookie } from 'hono/cookie'
+import { HTTPException } from 'hono/http-exception'
+
+import { handlePOSTLogout } from './post-logout'
+import { performLogout } from '../../../services/wrappers/logout'
+import { mockApiAppConfig } from '../../../../testUtils/mocks'
+import { mockLogoutRequestBody, mockLogoutResponse } from '../../../../test/csrf-token-mock-data'
+
+// Mock the wrapper
+vi.mock('../../../services/wrappers/logout', () => ({
+  performLogout: vi.fn(),
+}))
+
+describe('POST /logout is handled as expected', () => {
+  const mockApp = createApp()
+  const handler = handlePOSTLogout(mockApp, '/logout')
+
+  beforeAll(() => {
+    mockApp.use('*', async (c, next) => {
+      c.req.raw.headers.set('cookie', 'CSRF=mockCsrfCookie')
+      await next()
+    })
+  })
+
+  test('should call performLogout and return success message', async () => {
+    vi.mocked(performLogout).mockResolvedValue(mockLogoutResponse)
+
+    const response = await handler.request('/logout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(mockLogoutRequestBody),
+    })
+
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body).toEqual(mockLogoutResponse)
+    expect(performLogout).toHaveBeenCalledWith(
+      expect.anything(), // xior instance
+      'mockCsrfCookie',
+      mockLogoutRequestBody.csrfToken
+    )
+  })
+
+  test('should throw error when performLogout fails', async () => {
+    vi.mocked(performLogout).mockRejectedValue(
+      new HTTPException(500, { message: 'Logout failed' })
+    )
+
+    const response = await handler.request('/logout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(mockLogoutRequestBody),
+    })
+
+    const body = await response.text()
+
+    expect(response.status).toBe(500)
+    expect(body).toContain('Logout failed')
+  })
+})
+
+
+---
+
+You’ll Also Need:
+
+Mocks:
+
+Add this in your testUtils/mocks.ts or similar:
+
+export const mockLogoutRequestBody = {
+  csrfToken: 'mockCsrfToken',
+}
+
+export const mockLogoutResponse = {
+  message: 'Session terminated',
+}
+
+
+---
+
+Let me know if your performLogout wrapper needs specific mock behavior based on input or if you’d like to add a 400 test (bad request body). Would you like me to help with performLogout test stubbing too?
+
