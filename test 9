@@ -1,0 +1,47 @@
+Yes, great observation!
+
+In your POST /logout handler, you’re already doing:
+
+const logoutData = c.req.valid('json'); // validates body against zod schema via openapi spec
+
+So for consistency and stronger validation, you can absolutely apply the same .valid('cookie') approach to extract the CSRF token like this:
+
+const csrfCookieFromBrowser = c.req.valid('cookie').CSRF;
+
+But to make that work safely, you should also define a cookieSchema in your createRoute() block like you did for query in GET /complete-connection:
+
+const cookieSchema = z.object({
+  CSRF: z.string().describe('CSRF cookie used for validating logout request'),
+});
+
+And then attach it:
+
+const routeSpec = createRoute({
+  method: 'post',
+  path,
+  request: {
+    body: {
+      description: 'Logout details',
+      required: true,
+      content: {
+        'application/json': {
+          schema: logoutApiSchema,
+        },
+      },
+    },
+    cookies: cookieSchema, // <--- Add this
+  },
+  ...
+});
+
+That way:
+
+c.req.valid('cookie') validates against schema.
+
+Any missing or invalid CSRF cookie throws a Zod error early (and auto-handled by Hono’s OpenAPI validation).
+
+
+Bonus: You get auto-generated OpenAPI spec with cookie documented too!
+
+Let me know if you want me to write that snippet cleanly end-to-end. Want to add cookie schema now?
+
