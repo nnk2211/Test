@@ -125,3 +125,6 @@ mockApp.use('*', async (c, next) => {
   console.log('>>> PATH:', c.req.path);
   await next();
 });
+
+
+const cookieHeader = ['AuthToken=mockAuthTokenValue', 'CSRF=mockCsrfTokenValue'].join('; ');
