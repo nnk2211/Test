@@ -114,3 +114,17 @@ issues: {
   path?: string[];
   message: string;
 }[];
+
+type ZodErrorResponse = {
+  success: false;
+  error: {
+    name: 'ZodError';
+    issues: {
+      code: string;
+      expected?: string;
+      message: string;
+      path: string[];
+      received?: string;
+    }[];
+  };
+};
