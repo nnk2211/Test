@@ -162,3 +162,71 @@ test('should return 400 when CSRF cookie is invalid type', async () => {
 
   expect(response.statusCode).toBe(400);
 });
+
+
+Your wrapper test setup looks excellent — it clearly covers:
+
+1. Successful logout (200) with correct body and headers.
+
+
+2. Failure scenario when the SLAL API call fails (XiorError).
+
+
+
+To enhance this even more, you could add:
+
+
+---
+
+1. Edge case test: Missing csrfToken
+
+Check what happens if csrfTokenValue is undefined or an empty string.
+
+test('should fail if csrfTokenValue is missing', async () => {
+  await expect(
+    performLogout(slalXior, mockCsrfCookie, '')
+  ).rejects.toThrow(); // or a specific error if you're throwing one
+});
+
+
+---
+
+2. Malformed cookie
+
+If your logic depends on specific formatting (e.g. cookie string replacement), test a malformed or unexpected cookie:
+
+test('should handle malformed cookie', async () => {
+  const malformedCookie = 'badFormat;missingEquals';
+  const spy = vi.spyOn(slalXior, 'post');
+
+  await performLogout(slalXior, malformedCookie, mockCsrfToken);
+  expect(spy).toHaveBeenCalledWith(
+    logoutApiEndpoint,
+    { csrfToken: mockCsrfToken },
+    expect.objectContaining({
+      headers: expect.objectContaining({
+        Cookie: expect.stringContaining('CSRF='),
+      }),
+    })
+  );
+});
+
+
+---
+
+3. Missing slalXior instance
+
+If slalXior is ever nullable from upstream, a negative test might help:
+
+test('should throw if slalXior is undefined', async () => {
+  await expect(
+    // @ts-expect-error simulating undefined instance
+    performLogout(undefined, mockCsrfCookie, mockCsrfToken)
+  ).rejects.toThrow();
+});
+
+
+---
+
+Let me know if you want the full test case snippets dropped into your file! Want me to include any of these directly?
+
