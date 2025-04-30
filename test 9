@@ -67,3 +67,20 @@ test('should return 400 when CSRF cookie is missing', async () => {
   expect(response.statusCode).toBe(400);
   expect(response.body).toContain('CSRF'); // optional: match message
 });
+
+test('should return 400 when csrfToken is not a string', async () => {
+  const response = await handler(
+    getEvent(
+      '/logout',
+      {
+        Cookie: cookieHeader,
+        'Content-Type': 'application/json',
+      },
+      'POST',
+      { csrfToken: 12345 } // invalid type
+    )
+  );
+
+  expect(response.statusCode).toBe(400);
+  expect(response.body).toContain('"expected":"string"');
+});
