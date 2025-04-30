@@ -1,0 +1,74 @@
+Yes, you can easily extend your logoutTestPack to include multiple negative test cases (like missing CSRF token in body or cookie) using the same loop-based structure.
+
+Here’s how to refactor it cleanly:
+
+
+---
+
+Updated logoutTestPack with all 3 cases:
+
+const logoutTestPack: TestPack<{ message: string }> = [
+  {
+    ck: '970205143728',
+    csrf: 'mockCsrfTokenValue',
+    description: 'should return 200 when valid CSRF token and cookie are provided',
+    response: {
+      status: 200,
+      body: { message: 'Session terminated' },
+    },
+  },
+  {
+    ck: '970205143728',
+    csrf: '', // Missing CSRF cookie
+    description: 'should return 400 when CSRF cookie is missing',
+    response: {
+      status: 400,
+      body: { message: 'Invalid cookie' }, // or whatever your error schema returns
+    },
+  },
+  {
+    ck: '970205143728',
+    csrf: 'mockCsrfTokenValue',
+    omitBody: true, // we'll use this flag to skip sending the body
+    description: 'should return 400 when CSRF token is missing in body',
+    response: {
+      status: 400,
+      body: { message: 'Invalid request body' }, // or whatever your Zod error body is
+    },
+  },
+];
+
+
+---
+
+Updated Loop Logic:
+
+logoutTestPack.forEach(({ ck, csrf, omitBody, description, response: { status, body } }) => {
+  apiTest(description, async ({ baseUrl }) => {
+    const request = spec()
+      .post(`${baseUrl}/secure/api/logout`)
+      .withHeaders({ 'Content-Type': 'application/json' })
+      .withCookies(`ck=${ck}; CSRF=${csrf}`);
+
+    if (!omitBody) {
+      request.withJson({ csrfToken: 'mockCsrfToken' });
+    }
+
+    await request.expectStatus(status).expectBody(body);
+  });
+});
+
+
+---
+
+Notes:
+
+This avoids duplicating code.
+
+omitBody controls whether to send the request body.
+
+You can also add omitCookie in the future if needed.
+
+
+Want me to help convert this into a file snippet you can directly copy?
+
