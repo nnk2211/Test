@@ -45,3 +45,25 @@ Bonus: You get auto-generated OpenAPI spec with cookie documented too!
 
 Let me know if you want me to write that snippet cleanly end-to-end. Want to add cookie schema now?
 
+
+test('should return 400 when CSRF cookie is missing', async () => {
+  const cookieHeader = constructCookieString({
+    [mockApiAppConfig.sla1ApiAuthCookies[0]]: 'jwt...',
+    // CSRF cookie intentionally omitted
+  });
+
+  const response = await handler(
+    getEvent(
+      '/logout',
+      {
+        Cookie: cookieHeader,
+        'Content-Type': 'application/json',
+      },
+      'POST',
+      { csrfToken: 'mockCsrfToken' } // body still valid
+    )
+  );
+
+  expect(response.statusCode).toBe(400);
+  expect(response.body).toContain('CSRF'); // optional: match message
+});
