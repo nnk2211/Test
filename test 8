@@ -1,0 +1,56 @@
+import { describe, expect, test, vi } from 'vitest';
+import { performLogout } from './logout';
+import { XiorInstance, XiorResponse, XiorError } from 'xior';
+import { mockApiAppConfig } from '../../../testUtils/mocks';
+
+const logoutApiEndpoint = '/secure/customer-platform/rest/api/logout';
+
+describe('performLogout should function properly', () => {
+  const mockAuthCookie = 'RHVtbXkgQXV0aGVudGljYXRpc24gQ29va2ll';
+  const mockCsrfCookie = 'mockCsrfCookie';
+  const mockCsrfToken = 'mockCsrfToken';
+  const mockCookieString = `${mockApiAppConfig.slalApiAuthCookies[0]}=${mockAuthCookie}`;
+
+  const slalXior = {
+    post: vi.fn(),
+    config: {
+      headers: {
+        Cookie: mockCookieString,
+      },
+    },
+  } as unknown as XiorInstance;
+
+  test('should call the SLAL logout API with CSRF token and cookies', async () => {
+    const mockResponse = {
+      status: 200,
+      data: { message: 'Session terminated' },
+    } as XiorResponse;
+
+    const xiorSpy = vi.spyOn(slalXior, 'post');
+    xiorSpy.mockResolvedValueOnce(mockResponse);
+
+    const result = await performLogout(slalXior, mockCsrfCookie, mockCsrfToken);
+
+    expect(xiorSpy).toHaveBeenCalledTimes(1);
+    expect(xiorSpy).toHaveBeenCalledWith(
+      logoutApiEndpoint,
+      { csrfToken: mockCsrfToken },
+      {
+        headers: {
+          Cookie: `${mockCookieString}; CSRF=${mockCsrfCookie}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    expect(result).toEqual(mockResponse);
+  });
+
+  test('should throw XiorError when SLAL logout API call fails', async () => {
+    const error = new XiorError('Logout failed');
+    const xiorSpy = vi.spyOn(slalXior, 'post');
+    xiorSpy.mockRejectedValueOnce(error);
+
+    await expect(performLogout(slalXior, mockCsrfCookie, mockCsrfToken)).rejects.toThrowError('Logout failed');
+  });
+});
