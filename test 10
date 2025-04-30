@@ -102,3 +102,7 @@ logoutTestPack.forEach(({ ck, csrf, omitBody, omitCsrfCookie, description, respo
     await request.expectStatus(status).expectBody(body);
   });
 });
+
+const logoutTestPack: TestPack<string | { success: boolean; error: { issues: unknown[]; name: string } }> = [
+  // your entries here
+];
