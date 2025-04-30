@@ -106,3 +106,11 @@ logoutTestPack.forEach(({ ck, csrf, omitBody, omitCsrfCookie, description, respo
 const logoutTestPack: TestPack<string | { success: boolean; error: { issues: unknown[]; name: string } }> = [
   // your entries here
 ];
+
+issues: {
+  code: string;
+  expected?: string;
+  received?: string;
+  path?: string[];
+  message: string;
+}[];
