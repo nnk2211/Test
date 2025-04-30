@@ -65,3 +65,37 @@ expect(xiorSpy).toHaveBeenCalledWith(
     },
   }
 );
+
+
+describe('POST /secure/api/logout works as expected', () => {
+  const logoutTestPack: TestPack<{ message: string }> = [
+    {
+      ck: 'validAuthCookie=xyz; CSRF=mockCsrfCookie',
+      description: 'should return 202 when valid CSRF token and cookie are provided',
+      response: {
+        status: 202,
+        body: { message: 'Session terminated' },
+      },
+    },
+    {
+      ck: 'invalidAuth=none',
+      description: 'should return 401 when missing/invalid cookies or token',
+      response: {
+        status: 401,
+        body: 'Unauthenticated',
+      },
+    },
+  ];
+
+  logoutTestPack.forEach(({ ck, description, response: { status, body } }) => {
+    test(description, async ({ baseUrl }) => {
+      await spec()
+        .post(`${baseUrl}/secure/api/logout`)
+        .withHeaders({ 'Content-Type': 'application/json' })
+        .withCookies({ ck })
+        .withJson({ csrfToken: 'mockCsrfToken' })
+        .expectStatus(status)
+        .expectBody(body);
+    });
+  });
+});
