@@ -108,3 +108,11 @@ mockApp.use('*', async (c, next) => {
   }
   await next();
 });
+
+mockApp.use('*', async (c, next) => {
+  if (typeof c.req.raw.body === 'string') {
+    const parsed = JSON.parse(c.req.raw.body);
+    c.req.json = async () => parsed;
+  }
+  await next();
+});
