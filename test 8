@@ -99,3 +99,12 @@ describe('POST /secure/api/logout works as expected', () => {
     });
   });
 });
+
+mockApp.use('*', async (c, next) => {
+  if (typeof c.req.body === 'string') {
+    // Manually parse and attach body for OpenAPI validation
+    const parsed = JSON.parse(c.req.body);
+    c.req.json = async () => parsed;
+  }
+  await next();
+});
