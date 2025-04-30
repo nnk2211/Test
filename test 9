@@ -140,3 +140,25 @@ test('should return 400 when CSRF cookie is missing', async () => {
   expect(response.statusCode).toBe(400);
   expect(response.body).toContain('CSRF'); // optional: match message
 });
+
+
+test('should return 400 when CSRF cookie is invalid type', async () => {
+  const cookieHeader = constructCookieString({
+    [mockApiAppConfig.sla1ApiAuthCookies[0]]: 'jwt...',
+    CSRF: 12345 as unknown as string, // force invalid type
+  });
+
+  const response = await handler(
+    getEvent(
+      '/logout',
+      {
+        Cookie: cookieHeader,
+        'Content-Type': 'application/json',
+      },
+      'POST',
+      { csrfToken: 'mockCsrfToken' }
+    )
+  );
+
+  expect(response.statusCode).toBe(400);
+});
