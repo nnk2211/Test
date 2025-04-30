@@ -230,3 +230,7 @@ test('should throw if slalXior is undefined', async () => {
 
 Let me know if you want the full test case snippets dropped into your file! Want me to include any of these directly?
 
+.withCookies(`ck=${ck}; CSRF=mockCsrfToken`)
+
+
+
