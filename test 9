@@ -101,3 +101,20 @@ test('should return 400 when csrfToken is missing in request body', async () => 
   expect(response.statusCode).toBe(400);
   expect(response.body).toContain('"path":["csrfToken"]');
 });
+
+
+test('should return 400 when request body is missing', async () => {
+  const response = await handler(
+    getEvent(
+      '/logout',
+      {
+        Cookie: cookieHeader,
+        'Content-Type': 'application/json',
+      },
+      'POST'
+    )
+  );
+
+  expect(response.statusCode).toBe(400);
+  expect(response.body).toContain('"message":"Required"'); // Zod error message
+});
