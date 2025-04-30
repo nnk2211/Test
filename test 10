@@ -72,3 +72,13 @@ You can also add omitCookie in the future if needed.
 
 Want me to help convert this into a file snippet you can directly copy?
 
+response: {
+  status: 400,
+  body: {
+    success: false,
+    error: {
+      issues: expect.any(Array),
+      name: 'ZodError',
+    },
+  },
+}
