@@ -82,3 +82,23 @@ response: {
     },
   },
 }
+
+
+logoutTestPack.forEach(({ ck, csrf, omitBody, omitCsrfCookie, description, response: { status, body } }) => {
+  apiTest(description, async ({ baseUrl }) => {
+    const request = spec()
+      .post(`${baseUrl}/secure/api/logout`)
+      .withHeaders({ 'Content-Type': 'application/json' });
+
+    // Dynamically construct cookies
+    const cookieParts = [`ck=${ck}`];
+    if (!omitCsrfCookie) cookieParts.push(`CSRF=${csrf}`);
+    request.withCookies(cookieParts.join('; '));
+
+    if (!omitBody) {
+      request.withJson({ csrfToken: 'mockCsrfToken' });
+    }
+
+    await request.expectStatus(status).expectBody(body);
+  });
+});
