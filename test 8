@@ -54,3 +54,14 @@ describe('performLogout should function properly', () => {
     await expect(performLogout(slalXior, mockCsrfCookie, mockCsrfToken)).rejects.toThrowError('Logout failed');
   });
 });
+
+expect(xiorSpy).toHaveBeenCalledWith(
+  '/secure/customer-platform/rest/api/logout',
+  { csrfToken: mockCsrfToken },
+  {
+    headers: {
+      Cookie: `${mockCookieString}; CSRF=${mockCsrfCookie}`,
+      'Content-Type': 'application/json',
+    },
+  }
+);
