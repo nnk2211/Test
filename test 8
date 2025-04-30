@@ -116,3 +116,12 @@ mockApp.use('*', async (c, next) => {
   }
   await next();
 });
+
+
+mockApp.use('*', async (c, next) => {
+  console.log('>>> RAW REQUEST:', await c.req.text()); // see the raw body
+  console.log('>>> HEADERS:', c.req.header());
+  console.log('>>> METHOD:', c.req.method);
+  console.log('>>> PATH:', c.req.path);
+  await next();
+});
