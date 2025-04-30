@@ -118,3 +118,25 @@ test('should return 400 when request body is missing', async () => {
   expect(response.statusCode).toBe(400);
   expect(response.body).toContain('"message":"Required"'); // Zod error message
 });
+
+test('should return 400 when CSRF cookie is missing', async () => {
+  const cookieHeader = constructCookieString({
+    [mockApiAppConfig.sla1ApiAuthCookies[0]]: 'jwt...',
+    // CSRF cookie intentionally omitted
+  });
+
+  const response = await handler(
+    getEvent(
+      '/logout',
+      {
+        Cookie: cookieHeader,
+        'Content-Type': 'application/json',
+      },
+      'POST',
+      { csrfToken: 'mockCsrfToken' } // body still valid
+    )
+  );
+
+  expect(response.statusCode).toBe(400);
+  expect(response.body).toContain('CSRF'); // optional: match message
+});
