@@ -90,3 +90,57 @@ publicHostedZone.node.addDependency(route53DnsLoggingResourcePolicy);
 
 Let me know which one you're implementing, and I can help with cleanup or test updates if needed.
 
+
+export function createRoute53HostedZone(
+  stack: BaseStack,
+  route53Name: string,
+  envName: Environment,
+): HostedZone {
+  // Shared log group for Route53 query logging
+  const route53DnsLogGroup = createLogGroup(stack, {
+    logGroupName: 'Route53QueryLogs',
+    context: 'global',
+    envName,
+  });
+
+  // One shared resource policy
+  const route53DnsLoggingResourcePolicy = new CfnResourcePolicy(stack, 'Route53LogGroupAccess', {
+    policyName: 'Route53DnsLoggingResourcePolicy',
+    policyDocument: JSON.stringify({
+      Version: '2012-10-17',
+      Statement: [
+        {
+          Sid: 'AllowRoute53DnsLogging',
+          Effect: 'Allow',
+          Principal: { Service: 'route53.amazonaws.com' },
+          Action: ['logs:CreateLogStream', 'logs:PutLogEvents'],
+          Resource: route53DnsLogGroup.logGroupArn,
+          Condition: {
+            StringEquals: {
+              'aws:SourceAccount': stack.account,
+            },
+          },
+        },
+      ],
+    }),
+  });
+
+  // Create hosted zone and attach the shared log group
+  const publicHostedZone = new PublicHostedZone(stack, getEnvironmentLevelResourceName(route53Name, envName), {
+    zoneName: getEnvWebDomainName(envName),
+    comment: `Handles DNS routing for ${envName} environment and subdomains of it`,
+    queryLogsLogGroupArn: route53DnsLogGroup.logGroupArn,
+  });
+
+  publicHostedZone.node.addDependency(route53DnsLoggingResourcePolicy);
+
+  // Advanced Shield setup
+  enableAdvancedShieldProtection(stack, {
+    shieldName: 'Route53AdvancedShieldProtection',
+    resourceArn: publicHostedZone.hostedZoneArn,
+    applyLayerDDosResponse: false,
+    envName,
+  });
+
+  return publicHostedZone;
+}
