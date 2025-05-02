@@ -1,0 +1,92 @@
+Based on your current setup in the screenshots, here’s how you can implement both options:
+
+
+---
+
+Option 1: Shared log group and single resource policy (current approach)
+
+This assumes one log group and one resource policy, reused across all hosted zones in a region:
+
+const route53DnsLogGroup = createLogGroup(stack, {
+  logGroupName: 'Route53QueryLogs',
+  context: 'global',
+  envName,
+});
+
+const route53DnsLoggingResourcePolicy = new CfnResourcePolicy(stack, 'Route53LogGroupAccess', {
+  policyName: 'Route53DnsLoggingResourcePolicy',
+  policyDocument: JSON.stringify({
+    Version: '2012-10-17',
+    Statement: [
+      {
+        Sid: 'AllowRoute53DnsLogging',
+        Effect: 'Allow',
+        Principal: { Service: 'route53.amazonaws.com' },
+        Action: ['logs:CreateLogStream', 'logs:PutLogEvents'],
+        Resource: route53DnsLogGroup.logGroupArn,
+        Condition: {
+          StringEquals: {
+            'aws:SourceAccount': stack.account,
+          },
+        },
+      },
+    ],
+  }),
+});
+
+Then reuse this log group + policy for all hosted zones:
+
+const publicHostedZone = new PublicHostedZone(stack, ..., {
+  ...,
+  queryLogsLogGroupArn: route53DnsLogGroup.logGroupArn,
+});
+publicHostedZone.node.addDependency(route53DnsLoggingResourcePolicy);
+
+
+---
+
+Option 2: Per-hosted-zone log group and resource policy
+
+This creates a separate log group and policy per hosted zone:
+
+const logGroupName = `Route53QueryLogs-${route53Name}`; // Include hosted zone identifier
+const route53DnsLogGroup = createLogGroup(stack, {
+  logGroupName,
+  context: 'global',
+  envName,
+});
+
+const route53DnsLoggingResourcePolicy = new CfnResourcePolicy(stack, `Route53LogGroupAccess-${route53Name}`, {
+  policyName: `Route53DnsLoggingResourcePolicy-${route53Name}`,
+  policyDocument: JSON.stringify({
+    Version: '2012-10-17',
+    Statement: [
+      {
+        Sid: 'AllowRoute53DnsLogging',
+        Effect: 'Allow',
+        Principal: { Service: 'route53.amazonaws.com' },
+        Action: ['logs:CreateLogStream', 'logs:PutLogEvents'],
+        Resource: route53DnsLogGroup.logGroupArn,
+        Condition: {
+          StringEquals: {
+            'aws:SourceAccount': stack.account,
+          },
+        },
+      },
+    ],
+  }),
+});
+
+Then use this dedicated log group for each hosted zone:
+
+const publicHostedZone = new PublicHostedZone(stack, ..., {
+  ...,
+  queryLogsLogGroupArn: route53DnsLogGroup.logGroupArn,
+});
+publicHostedZone.node.addDependency(route53DnsLoggingResourcePolicy);
+
+
+---
+
+Let me know which one you're implementing, and I can help with cleanup or test updates if needed.
+
