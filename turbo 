@@ -1,0 +1,76 @@
+Got it! Here's a clearer and more complete PR comment you can use to explain the Turbo-based E2E trigger flow, including all the changes and reasoning:
+
+
+---
+
+As discussed, replaced the hash-compare logic with Turbo-based change detection
+
+Based on previous feedback, I’ve removed the manual hash + version comparison approach, and instead explored how we can leverage Turbo's native build awareness to determine whether the E2E test suite should run, based on whether the dashboard or backend builds changed.
+
+
+---
+
+What we changed
+
+1. Enabled Turbo to track changes in build outputs:
+
+In turbo.json, we added an inputs array to the test:pipeline task:
+
+"inputs": ["../../apps/dashboard/dist/**", "../../apps/back-end/dist/**"]
+
+This tells Turbo: “Only re-run this task (E2E tests) if these build outputs changed.”
+
+
+
+2. Ensured backend and dashboard builds happen in the E2E pipeline:
+
+We explicitly build both dashboard and backend inside the pipeline to populate the dist folders, since Turbo needs those to determine changes.
+
+Both are run using:
+
+pnpm turbo run build --filter <package> --cache-dir=.turbo
+
+
+
+3. Added Turbo cache to the pipeline:
+
+- name: Cache Turbo
+  uses: actions/cache@v4
+  with:
+    path: .turbo
+    key: ${{ runner.os }}-turbo-e2e-${{ github.sha }}
+    restore-keys: |
+      ${{ runner.os }}-turbo-e2e-
+
+Each run saves its result using a SHA-based cache key, so it doesn't overwrite previous runs.
+
+We use a restore-keys fallback to let new PRs reuse the last working cache even if the exact key doesn't exist.
+
+
+
+4. Test pipeline now also uses the same Turbo cache:
+
+E2E test task (test:pipeline) is run with --cache-dir=.turbo so Turbo can determine whether to skip it based on build output changes.
+
+
+
+
+
+---
+
+Flow behavior now
+
+Scenario	Result
+
+First run on a fresh PR	No cache → Full build of dashboard/backend → E2E tests run
+New PR with no dashboard/backend changes	Turbo detects no changes → E2E test suite is skipped using cache (FULL TURBO)
+PR with dashboard changes	Dashboard build invalidated → E2E test cache also invalidated → tests re-run
+PR with backend changes	Same as above: backend build invalidated → E2E test re-run
+PR with unrelated changes (e.g., infra/docs)	Build cache reused → E2E skipped (FULL TURBO)
+
+
+
+---
+
+Let me know if this sounds good, or if you'd like any tweaks to the flow.
+
