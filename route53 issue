@@ -1,0 +1,43 @@
+Got it! Here's the full version covering both the issue and the fix with clarity and brevity:
+
+
+---
+
+PR Title
+
+Fix: Resolve Route 53 DNS logging conflicts by creating unique log groups and policies per environment
+
+
+---
+
+Commit Message
+
+fix(route53): avoid conflicts by generating unique CloudWatch log groups and resource policies for each Route 53 hosted zone
+
+
+---
+
+PR Description
+
+Issue
+
+In non-prod (dev) environments, the deployment was failing because multiple Route 53 hosted zones were trying to use the same CloudWatch log group and attach the same CfnResourcePolicy.
+This resulted in a conflict error: "LogGroup already exists" or logical ID duplication for the policy.
+
+Resolution
+
+We adopted Option 1 — creating a separate log group and resource policy for each hosted zone.
+To implement this:
+
+The log group name now includes the environment name, making it unique per environment.
+
+The Route53DnsLoggingResourcePolicy logical ID is also suffixed with envName, ensuring uniqueness across environments.
+
+
+This resolves the stack conflict and safely enables DNS query logging for each hosted zone.
+
+
+---
+
+Let me know if you want to include a Jira ticket or reviewer mention too.
+
