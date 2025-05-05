@@ -74,3 +74,12 @@ PR with unrelated changes (e.g., infra/docs)	Build cache reused → E2E skipped 
 
 Let me know if this sounds good, or if you'd like any tweaks to the flow.
 
+
+Here’s a clean and concise single-line commit message for the above changes:
+
+Enable Turbo-based change detection to conditionally run E2E suite based on dashboard/backend builds
+
+Let me know if you want an even shorter variant or something more expressive for release notes.
+
+
+
