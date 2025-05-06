@@ -87,6 +87,29 @@ So I feel we’re good here — signing this off!
 Let me know if you want a more casual or formal tone.
 
 
+Definitely! Here's the revised version with that line added naturally before the last paragraph:
+
+
+---
+
+Thanks Sundar!
+
+Yeah, Krishna and I discussed a similar scenario — it’s quite nuanced, and I think it needs a deeper understanding of how Turbo compares inputs across branches.
+
+From what I could read, Turbo uses input hashes to detect changes. So even if the current branch (say PR #2) has no dashboard/backend changes, it might still re-run the build if the restored cache (say from PR #1) has a different input hash — which isn’t ideal, since technically no build was needed.
+
+I tested this thoroughly in a single-branch setup using workflow dispatch, and everything worked as expected there. But the cross-PR cache interactions between multiple branches are trickier to reason through.
+Your thoughts here, Chris?
+
+We’ll move this to main and observe in real usage — happy to refine it further if we notice anything off.
+
+
+---
+
+Let me know if you want a softer or more assertive tone.
+
+
+
 
 
 
