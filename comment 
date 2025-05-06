@@ -21,3 +21,19 @@ Got it! Here’s the refined ending for your comment:
 If renaming helps improve clarity, I can update them to something like test:e2e:pipeline and test:e2e:local to better reflect their purpose — just let me know if that works for you!
 
 
+Yes, here’s a clean and slightly more refined version that includes that distinction:
+
+
+---
+
+Thanks, Chris!
+
+Just to clarify — the test:pipeline script is defined in the e2e package’s package.json, and that’s what Turbo is executing.
+
+As for combining the steps: the dashboard build is a strict dependency since we need it fully built before we can serve it and check for liveliness before running the tests. The backend build, on the other hand, is included purely for Turbo's change detection — to help determine whether the E2E tests need to re-run.
+
+We kept them as separate steps for clarity and easier debugging, but happy to refactor and combine if you feel strongly about it.
+
+
+
+
