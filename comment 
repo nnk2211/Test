@@ -1,0 +1,15 @@
+Sure! Here’s your updated reply with that line added:
+
+
+---
+
+Thanks, Chris!
+
+Just to clarify on the script — it does exist in the package.json under root/tests/e2e/package.json as test:pipeline.
+
+The flow I described above was tested thoroughly before pushing the changes, and it worked exactly as expected in all the scenarios.
+
+The reason I retained the name test:pipeline is because there are two related scripts — test:local (for local runs) and test:pipeline (used in GitHub Actions). The pipeline script takes a --pipeline flag, which helps control whether the browser runs in headless mode for CI or headed mode for local.
+
+If we rename it, we might lose that clarity or consistency, but I’m happy to adjust it if you feel a different name would make things more intuitive.
+
