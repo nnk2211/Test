@@ -62,6 +62,21 @@ logoutTestPack.forEach(({ ck, csrf, csrfToken, description, response: { status, 
   });
 });
 
+Yes, that's a great addition — here's how you can naturally fit that in:
+
+
+---
+
+Understood the expectation to remove the boolean flags and handle inclusion dynamically.
+Replaced them with two optional fields: csrfCookie (existing one, previously named csrf) and csrfToken. Based on their presence, cookies and body are conditionally added in the test runner — keeping the interface clean and avoiding potentially confusing control flags.
+
+
+---
+
+That phrasing keeps it concise and clear. Let me know if you want to tweak the tone slightly!
+
+
+
 
 
 
