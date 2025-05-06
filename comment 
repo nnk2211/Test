@@ -34,6 +34,15 @@ As for combining the steps: the dashboard build is a strict dependency since we 
 
 We kept them as separate steps for clarity and easier debugging, but happy to refactor and combine if you feel strongly about it.
 
+Yes, here’s a cleaner and clearer version of that question you can use:
+
+
+---
+
+Also, just checking — shall we combine the frontend and backend builds together, then serve the dashboard, and finally execute the E2E test as a single step? Let me know if that feels cleaner to you.
+
+
+
 
 
 
