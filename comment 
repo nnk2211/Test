@@ -13,3 +13,11 @@ The reason I retained the name test:pipeline is because there are two related sc
 
 If we rename it, we might lose that clarity or consistency, but I’m happy to adjust it if you feel a different name would make things more intuitive.
 
+Got it! Here’s the refined ending for your comment:
+
+
+---
+
+If renaming helps improve clarity, I can update them to something like test:e2e:pipeline and test:e2e:local to better reflect their purpose — just let me know if that works for you!
+
+
