@@ -42,6 +42,27 @@ Yes, here’s a cleaner and clearer version of that question you can use:
 Also, just checking — shall we combine the frontend and backend builds together, then serve the dashboard, and finally execute the E2E test as a single step? Let me know if that feels cleaner to you.
 
 
+logoutTestPack.forEach(({ ck, csrf, csrfToken, description, response: { status, body } }) => {
+  apiTest(description, async ({ baseUrl }) => {
+    const request = spec()
+      .post(`${baseUrl}/secure/api/logout`)
+      .withHeaders({ 'Content-Type': 'application/json' });
+
+    // Handle cookies
+    const cookieParts = [`ck=${ck}`];
+    if (csrf) cookieParts.push(`CSRF=${csrf}`);
+    request.withCookies(cookieParts.join(';'));
+
+    // Handle request body
+    if (csrfToken) {
+      request.withJson({ csrfToken });
+    }
+
+    await request.expectStatus(status).expectBody(body);
+  });
+});
+
+
 
 
 
