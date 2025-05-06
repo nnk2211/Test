@@ -108,6 +108,15 @@ We’ll move this to main and observe in real usage — happy to refine it furth
 
 Let me know if you want a softer or more assertive tone.
 
+Sure! You can tweak that second paragraph to:
+
+> From what I could read, Turbo uses input hashes to detect changes. So even if the current branch (say PR #2) has no dashboard/backend changes, it might still run the build if the restored cache (say from PR #1) has a different input hash — which isn’t ideal. In this case, the build technically didn’t need to re-run. But not fully sure here — the behavior is a bit confusing based on what I could read.
+
+
+
+Would you like to soften it more or keep it as-is?
+
+
 
 
 
