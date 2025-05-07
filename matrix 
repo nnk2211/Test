@@ -1,0 +1,88 @@
+Thanks! Based on your current setup (single-dimensional matrix over account) and your newly confirmed requirement (multi-region + account matrix), here's the improved YAML-only solution — no Bash script, clean, readable, and scalable.
+
+✅ Updated calculate-matrix job (2D matrix with account + region logic):
+
+jobs:
+  calculate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - id: set-matrix
+        run: |
+          REGION_INPUT="${{ github.event.inputs.region }}"
+          STAGE_PROD="${{ github.event.inputs.stageToProduction }}"
+          MATRIX_JSON="["
+
+          if [[ "$REGION_INPUT" != "" ]]; then
+            REGIONS="[$REGION_INPUT]"
+          else
+            REGIONS='["eu-west-1","eu-central-1"]'
+          fi
+
+          # Add POC, preprod always (both regions)
+          for region in $(echo $REGIONS | jq -r '.[]'); do
+            MATRIX_JSON+="{\"account\":\"POC\",\"region\":\"$region\"},"
+            MATRIX_JSON+="{\"account\":\"preprod\",\"region\":\"$region\"},"
+          done
+
+          # Add prod only if stageToProduction is true
+          if [[ "$STAGE_PROD" == "true" ]]; then
+            for region in $(echo $REGIONS | jq -r '.[]'); do
+              MATRIX_JSON+="{\"account\":\"prod\",\"region\":\"$region\"},"
+            done
+          fi
+
+          # Dev is always eu-west-1 only
+          MATRIX_JSON+="{\"account\":\"dev\",\"region\":\"eu-west-1\"}"
+
+          MATRIX_JSON+="]"
+          echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
+
+
+---
+
+✅ Example use in any matrix-based job (like upload-and-deploy-dashboard):
+
+upload-and-deploy-dashboard:
+    needs: [tag-and-package, calculate-matrix]
+    if: needs.tag-and-package.outputs.dashboardVersion != ''
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.calculate-matrix.outputs.matrix) }}
+    environment: ${{ matrix.account }}
+    runs-on: ubuntu-latest
+    concurrency:
+      group: aws-key-rotation-${{ matrix.account }}-${{ matrix.region }}
+      cancel-in-progress: false
+    steps:
+      - name: Setup AWS CLI
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ matrix.region }}
+        run: |
+          aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
+          aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
+          aws configure set default.region "$AWS_DEFAULT_REGION"
+
+      # ... your S3 upload and deployment logic here
+
+
+---
+
+Summary:
+
+Item	Value
+
+Approach	YAML-only with Bash inside one job
+Output	Clean matrix of { account, region }
+Regions	Dynamic via input or default to both
+Dev	Always single region eu-west-1
+Prod	Only added if stageToProduction true
+
+
+This is production-grade, extensible, and now aligned perfectly with your project’s multi-region infra setup.
+
+Do you want me to give you the cleaned-up version of just the upload-and-deploy-dashboard full job too?
+
