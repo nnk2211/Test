@@ -249,3 +249,27 @@ upload-and-deploy-edge-lambda:
 
 Let me know if you'd like these snippets saved into a .yml file or pushed to a branch for review.
 
+
+record-dashboard-deployment:
+  if: github.event_name == 'push'
+  needs: [tag-and-package, upload-and-deploy-dashboard]
+  runs-on: ubuntu-latest
+  environment: preprod
+  steps:
+    - name: Checkout custom action
+      uses: actions/checkout@v4
+      with:
+        sparse-checkout: .github
+
+    - name: Record deployment data
+      uses: ./.github/actions/record-deployment
+      with:
+        account: dev
+        app: 'Dashboard'
+        env: 'main'
+        stage: 'live'
+        deploy_region: eu-west-1
+        version: ${{ needs.tag-and-package.outputs.dashboardVersion }}
+        aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
