@@ -1,0 +1,94 @@
+Great! Here's a complete breakdown of all scenarios, the corresponding matrix JSON output, and a short explanation — so you can confidently showcase the logic.
+
+
+---
+
+1. When region input is empty & stageToProduction = false
+
+(default case for manual trigger or missing inputs)
+
+Matrix Output:
+
+[
+  { "account": "POC", "region": "eu-west-1" },
+  { "account": "POC", "region": "eu-central-1" },
+  { "account": "preprod", "region": "eu-west-1" },
+  { "account": "preprod", "region": "eu-central-1" },
+  { "account": "dev", "region": "eu-west-1" }
+]
+
+
+---
+
+2. When region = eu-central-1 and stageToProduction = false
+
+Matrix Output:
+
+[
+  { "account": "POC", "region": "eu-central-1" },
+  { "account": "preprod", "region": "eu-central-1" },
+  { "account": "dev", "region": "eu-west-1" }
+]
+
+Region is respected for POC/preprod.
+
+Dev is always in eu-west-1.
+
+
+
+---
+
+3. When region input is empty & stageToProduction = true
+
+Matrix Output:
+
+[
+  { "account": "POC", "region": "eu-west-1" },
+  { "account": "POC", "region": "eu-central-1" },
+  { "account": "preprod", "region": "eu-west-1" },
+  { "account": "preprod", "region": "eu-central-1" },
+  { "account": "prod", "region": "eu-west-1" },
+  { "account": "prod", "region": "eu-central-1" },
+  { "account": "dev", "region": "eu-west-1" }
+]
+
+All accounts + both regions.
+
+Dev still only in eu-west-1.
+
+
+
+---
+
+4. When region = eu-west-1 and stageToProduction = true
+
+Matrix Output:
+
+[
+  { "account": "POC", "region": "eu-west-1" },
+  { "account": "preprod", "region": "eu-west-1" },
+  { "account": "prod", "region": "eu-west-1" },
+  { "account": "dev", "region": "eu-west-1" }
+]
+
+
+---
+
+Key Logic Recap:
+
+POC, preprod → always included.
+
+prod → only added if stageToProduction = true.
+
+dev → always included, but fixed to eu-west-1 only.
+
+If region is not selected → fallback to both (eu-west-1, eu-central-1).
+
+All combinations formed as { account, region }.
+
+
+
+---
+
+Let me know if you'd like this visualized as a table or added to your docs!
+
