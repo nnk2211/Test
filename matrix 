@@ -128,3 +128,124 @@ upload-and-deploy-dashboard:
 
         sh make-ui-version-live.sh "$distribution_id" "$origin_id" "${{ needs.tag-and-package.outputs.dashboardVersion }}"
         echo "Successfully deployed UI version to main" >> $GITHUB_STEP_SUMMARY
+
+
+Here’s the updated YAML snippets for both upload-and-deploy-api and upload-and-deploy-edge-lambda jobs using the new 2D matrix (region + account) — matching your updated upload-and-deploy-dashboard structure:
+
+
+---
+
+upload-and-deploy-api
+
+upload-and-deploy-api:
+  needs: [tag-and-package, calculate-matrix]
+  if: needs.tag-and-package.outputs.apiVersion != ''
+  strategy:
+    fail-fast: false
+    matrix: ${{ fromJson(needs.calculate-matrix.outputs.matrix) }}
+  environment: ${{ matrix.account }}
+  runs-on: ubuntu-latest
+  timeout-minutes: 5
+  concurrency:
+    group: aws-key-rotation-${{ matrix.account }}
+    cancel-in-progress: false
+  steps:
+    - name: Check out repository code
+      uses: actions/checkout@v4
+
+    - name: Setup AWS CLI
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      run: |
+        aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
+        aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
+        aws configure set default.region "${{ matrix.region }}"
+
+    - name: Download lambda build
+      uses: actions/download-artifact@v4
+      with:
+        name: lambda
+        path: apiDist
+
+    - name: Display structure of downloaded files
+      run: ls -R apiDist
+
+    - name: Upload API build to each account's Amazon S3 bucket if changes detected
+      run: |
+        bucket_name=$(aws ssm get-parameter --region ${{ matrix.region }} --name BucketName_ember-lambda-versions-${{ matrix.account }} --query "Parameter.Value" --output text)
+        echo "Bucket name: $bucket_name"
+        version="${{ needs.tag-and-package.outputs.apiVersion }}"
+        aws s3 sync apiDist s3://$bucket_name/api-backend/lambda/$version
+        echo "Upload complete to s3://$bucket_name/api-backend/lambda/$version - ${{ matrix.account }} - ${{ matrix.region }}"
+
+    - name: Make new API build live in 'main' continuous deployment environment (of dev account)
+      if: matrix.account == 'dev' && github.event_name == 'push'
+      env:
+        ENV_NAME: 'main'
+      run: |
+        function_name=$(aws ssm get-parameter --region ${{ matrix.region }} --name DistributionId_ember-apiLambdaLive-${{ ENV_NAME }} --query "Parameter.Value" --output text)
+        version="${{ needs.tag-and-package.outputs.apiVersion }}"
+        function_version=$(aws lambda list-versions-by-function --function-name "$function_name" --query "Versions[?Description=='$version'].Version | [0]" | jq -r '.')
+        aws lambda update-alias --function-name "$function_name" --name "$ENV_NAME" --function-version "$function_version"
+        echo "Successfully deployed API version to $ENV_NAME"
+
+
+---
+
+upload-and-deploy-edge-lambda
+
+upload-and-deploy-edge-lambda:
+  needs: [tag-and-package, calculate-matrix]
+  if: needs.tag-and-package.outputs.edgeLambdaVersion != ''
+  strategy:
+    fail-fast: false
+    matrix: ${{ fromJson(needs.calculate-matrix.outputs.matrix) }}
+  environment: ${{ matrix.account }}
+  runs-on: ubuntu-latest
+  timeout-minutes: 5
+  concurrency:
+    group: aws-key-rotation-${{ matrix.account }}
+    cancel-in-progress: false
+  steps:
+    - name: Check out repository code
+      uses: actions/checkout@v4
+
+    - name: Setup AWS CLI
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      run: |
+        aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
+        aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
+        aws configure set default.region "${{ matrix.region }}"
+
+    - name: Download Edge lambda build
+      uses: actions/download-artifact@v4
+      with:
+        name: api-backend-origin-request
+        path: apiDist
+
+    - name: Display structure of downloaded files
+      run: ls -R apiDist
+
+    - name: Upload Edge lambda build to each account's Amazon S3 bucket if changes detected
+      env:
+        ACCOUNT: ${{ matrix.account }}
+      run: |
+        sh apps/edgeLambdas/api-backend-origin-request/upload-s3.sh "${{ needs.tag-and-package.outputs.edgeLambdaVersion }}"
+
+    - name: Make new Edge lambda build live in 'main' continuous deployment environment (of dev account)
+      if: matrix.account == 'dev' && github.event_name == 'push'
+      env:
+        ENV_NAME: 'main'
+        AWS_DEFAULT_REGION: ${{ matrix.region }}
+      run: |
+        sh apps/edgeLambdas/api-backend-origin-request/make-live.sh "$ENV_NAME" "Live" "${{ needs.tag-and-package.outputs.edgeLambdaVersion }}"
+        echo "Successfully deployed Edge Lambda version to $ENV_NAME"
+
+
+---
+
+Let me know if you'd like these snippets saved into a .yml file or pushed to a branch for review.
+
