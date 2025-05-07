@@ -57,3 +57,74 @@ on:
         required: false
         type: boolean
         default: false
+
+
+
+upload-and-deploy-dashboard:
+  needs: [tag-and-package, calculate-matrix]
+  if: needs.tag-and-package.outputs.dashboardVersion != ''
+  strategy:
+    fail-fast: false
+    matrix: ${{ fromJson(needs.calculate-matrix.outputs.matrix) }}
+  environment: ${{ matrix.account }}
+  runs-on: ubuntu-latest
+  timeout-minutes: 5
+  concurrency:
+    group: aws-key-rotation-${{ matrix.account }}-${{ matrix.region }}
+    cancel-in-progress: false
+  steps:
+    - name: Check out repository code
+      uses: actions/checkout@v4
+
+    - name: Setup AWS CLI
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      run: |
+        aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
+        aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
+        aws configure set default.region "${{ matrix.region }}"
+
+    - name: Download dashboard build
+      uses: actions/download-artifact@v4
+      with:
+        name: dashboard-dist
+        path: dashboardDist
+
+    - name: Display structure of downloaded files
+      run: ls -R dashboardDist
+
+    - name: Upload dashboard build to each account's Amazon S3 bucket
+      run: |
+        bucket_name=$(aws ssm get-parameter \
+          --region ${{ matrix.region }} \
+          --name BucketName_ember-ui-versions-${{ matrix.account }} \
+          --query "Parameter.Value" \
+          --output text)
+
+        echo "Bucket name: $bucket_name"
+
+        version="${{ needs.tag-and-package.outputs.dashboardVersion }}"
+        aws s3 sync dashboardDist s3://$bucket_name/$version
+        echo "Upload complete to s3://$bucket_name/$version"
+
+    - name: Make live in 'main' environment (only for dev) if pushed to main
+      if: matrix.account == 'dev' && github.event_name == 'push'
+      env:
+        ENV_NAME: 'main'
+      working-directory: ./infra/shell-scripts
+      run: |
+        distribution_id=$(aws ssm get-parameter \
+          --region ${{ matrix.region }} \
+          --name DistributionId_ember_CloudFrontLive_${{ env.ENV_NAME }} \
+          --query "Parameter.Value" \
+          --output text)
+
+        origin_id=$(aws ssm get-parameter \
+          --region ${{ matrix.region }} \
+          --name DistributionS3OriginId_ember_CloudFrontLive_${{ env.ENV_NAME }} \
+          --query "Parameter.Value" \
+          --output text)
+
+        sh make-ui-version-live.sh "$distribution_id" "$origin_id" "${{ needs.tag-and-package.outputs.dashboardVersion }}"
+        echo "Successfully deployed UI version to main" >> $GITHUB_STEP_SUMMARY
