@@ -36,3 +36,24 @@ jobs:
 
           MATRIX_JSON+="]"
           echo "matrix=$MATRIX_JSON" >> $GITHUB_OUTPUT
+
+
+on:
+  push:
+    branches: [main]
+
+  workflow_dispatch:
+    inputs:
+      region:
+        description: 'Select a region (optional)'
+        required: false
+        type: choice
+        options:
+          - eu-west-1
+          - eu-central-1
+
+      stageToProduction:
+        description: 'Include production environment?'
+        required: false
+        type: boolean
+        default: false
