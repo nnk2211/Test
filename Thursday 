@@ -20,3 +20,37 @@ Fixed stageToProduction boolean handling for cleaner condition checks
 
 Let me know if you want a shorter version or want to add a Jira ID.
 
+
+Absolutely — here's the updated PR description including the IAM policy change:
+
+
+---
+
+PR Title:
+
+Refactored cd-package-and-stage-code workflow to support multi-region deployments
+
+
+---
+
+PR Description:
+
+Refactored the matrix to support a 2D structure (account × region)
+
+Enabled manual region selection via workflow inputs
+
+Updated all deployment jobs to use matrix.region dynamically
+
+Passed region to shell scripts, replacing hardcoded defaults
+
+Added -e flag to upload-aws.sh to ensure failures are caught
+
+Fixed stageToProduction boolean handling for cleaner condition checks
+
+Updated IAM permissions in AWS to allow required KMS access per region for the deploy user
+
+
+Let me know if you'd like to add bucket/KMS key names as references too.
+
+
+
