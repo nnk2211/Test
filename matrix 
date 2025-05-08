@@ -273,3 +273,7 @@ record-dashboard-deployment:
         aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
+
+- name: Echo stageToProduction value
+  run: echo "stageToProduction is ${{ github.event.inputs.stageToProduction }}"
+
