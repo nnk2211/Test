@@ -98,5 +98,45 @@ The changes involved in this are explained in detail in the PR description.
 Let me know if you'd like it tailored to a specific template or tool (like Jira Cloud or Data Center).
 
 
+Here you go — short, clear, and to the point:
+
+
+---
+
+Commit Message:
+
+reintroduce GET /logout in Mock SLAL for E2E compatibility
+
+
+---
+
+Comment for the route in code:
+
+// TODO: Remove once SLAL infra issue is fixed and frontend uses new POST /logout via Ember backend
+
+
+---
+
+PR Title:
+
+Reintroduce GET /logout in Mock SLAL for temporary E2E support
+
+
+---
+
+PR Description:
+
+Added back the GET /logout route in Mock SLAL to avoid E2E failures.
+This is temporary until SLAL infra is fixed and the frontend switches to the new POST-based logout via Ember backend.
+Includes a TODO to clean up later.
+
+
+---
+
+Let me know if you want to include the E2E test suite name or Jira ID.
+
+
+
+
 
 
