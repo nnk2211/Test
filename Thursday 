@@ -136,6 +136,26 @@ Includes a TODO to clean up later.
 Let me know if you want to include the E2E test suite name or Jira ID.
 
 
+Sure! Here's a slightly more detailed but still concise version of the PR description:
+
+
+---
+
+PR Description:
+
+Reintroduced the GET /logout route in the Mock SLAL server to temporarily support the E2E test suite.
+The Ember backend and integration tests already use the new POST /logout route, but due to an infrastructure issue on the SLAL API side, the frontend has not yet been updated.
+As a result, the E2E tests fail when the frontend calls the old GET /logout endpoint, which no longer exists in the mock.
+To prevent test failures, the GET route has been added back with a TODO to remove it once the issue is resolved and the frontend is integrated with the new logout API.
+
+
+---
+
+Let me know if you want to add a link to the ticket or E2E test file.
+
+
+
+
 
 
 
