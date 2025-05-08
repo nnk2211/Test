@@ -1,0 +1,22 @@
+Sure! Here's the updated version including your point:
+
+PR Title:
+Refactored cd-package-and-stage-code workflow to support multi-region deployments
+
+PR Description:
+
+Refactored the matrix to support a 2D structure (account × region)
+
+Enabled manual region selection via workflow inputs
+
+Updated all deployment jobs to use matrix.region dynamically
+
+Passed region to shell scripts, replacing hardcoded defaults
+
+Added -e flag to upload-aws.sh to ensure failures are caught
+
+Fixed stageToProduction boolean handling for cleaner condition checks
+
+
+Let me know if you want a shorter version or want to add a Jira ID.
+
