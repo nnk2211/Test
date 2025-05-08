@@ -53,4 +53,50 @@ Updated IAM permissions in AWS to allow required KMS access per region for the d
 Let me know if you'd like to add bucket/KMS key names as references too.
 
 
+Perfect! Here's your finalized version with that last line added:
+
+
+---
+
+Jira Title:
+
+Refactor cd-package-and-stage-code workflow for multi-region deployment support
+
+
+---
+
+Jira Description:
+
+This task involves updating the cd-package-and-stage-code.yml GitHub Actions workflow to support multi-region deployments across environments.
+
+Scope of the work:
+
+Modify the workflow matrix to support combinations of multiple accounts and regions.
+
+Add an input to optionally select a region during manual workflow dispatch.
+
+Ensure region-specific values are passed correctly to all deployment jobs and shell scripts.
+
+Replace hardcoded default region usages with dynamic values from the matrix.
+
+Update shell scripts to support region as an argument and handle failures explicitly.
+
+Review and update the stageToProduction input handling to align with expected boolean behavior.
+
+
+
+---
+
+Jira Comment:
+
+Done with the required changes and created a PR.
+Tested the flow in POC for both regions.
+PR is now open for review.
+Detailed changes are provided in the PR linked to this ticket.
+The changes involved in this are explained in detail in the PR description.
+
+Let me know if you'd like it tailored to a specific template or tool (like Jira Cloud or Data Center).
+
+
+
 
