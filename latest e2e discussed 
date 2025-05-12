@@ -225,3 +225,64 @@ This strategy creates a "breadcrumb trail": each new cache is stored under the l
 You're golden with this setup. Want me to generate a clean snippet combining both sections?
 
 
+
+Yes boss, you’re spot on. You’ll need to combine the new workflow_dispatch condition with your existing if conditions in both jobs to prevent unintentional cache usage during manual runs.
+
+
+---
+
+✅ 1. In store-main-cache job:
+
+You already have:
+
+if: github.event.pull_request.merged == true
+
+Now combine it with the workflow_dispatch check:
+
+if: github.event_name != 'workflow_dispatch' && github.event.pull_request.merged == true
+
+
+---
+
+✅ 2. In e2e-test job:
+
+If it currently has no if:, you can safely add:
+
+if: github.event_name != 'workflow_dispatch'
+
+Or if you already have other conditions (like in your screenshot with pull_request_review), combine them like this:
+
+if: (github.event_name != 'workflow_dispatch') && 
+    (github.event_name != 'pull_request_review' || github.event.review.state == 'approved')
+
+
+---
+
+Cleaned-up Examples:
+
+store-main-cache job:
+
+if: github.event_name != 'workflow_dispatch' && github.event.pull_request.merged == true
+
+e2e-test job (optional if combining multiple checks):
+
+if: github.event_name != 'workflow_dispatch'
+
+
+---
+
+Want a commit message?
+
+Here you go:
+
+Commit:
+
+fix: guard cache logic from workflow_dispatch and non-merged PRs
+
+Extended:
+
+- Combined existing 'pull_request.merged' check with 'event_name != workflow_dispatch' for store-main-cache job
+- Added workflow_dispatch guard to e2e-test job as well to avoid accidental restore/store in manual runs
+
+Would you like me to update your PR comment to Chris as well with this included?
+
