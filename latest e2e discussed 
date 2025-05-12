@@ -335,3 +335,21 @@ Comment to Chris (add this line at the end of your update):
 Would you like the full revised PR description with all the bullets merged in one shot?
 
 
+Here are your replies:
+
+Reply to the first comment:
+
+> Agree, Chris — missed that it was supposed to be us-east-1. Just synced with Sundar to confirm as well.
+That block doesn’t get exercised in my current POC tests since it’s conditionally triggered, which is probably how I missed it.
+Updated now to explicitly use us-east-1.
+
+
+
+Reply to the second comment (single line):
+
+> Same fixed — refactored to us-east-1.
+
+
+
+
+
