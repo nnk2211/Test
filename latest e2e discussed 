@@ -1,0 +1,48 @@
+name: E2E Test Pipeline
+
+on: pull_request: types: [review_requested, review_submitted] workflow_dispatch: schedule: - cron: '0 22 * * *' # Run every day at 10 PM UTC push: branches: - main
+
+jobs:
+
+Store turbo cache to main branch on merge
+
+store-main-cache: name: Store Turbo Cache to Main runs-on: ubuntu-latest if: github.ref == 'refs/heads/main' && github.event_name == 'push' steps: - name: Checkout repo uses: actions/checkout@v4 with: fetch-depth: 0
+
+- name: Cache Turbo
+    uses: actions/cache@v4
+    with:
+      path: .turbo
+      key: ${{ runner.os }}-turbo-e2e-main
+
+  - name: Build dashboard
+    run: pnpm turbo run build --filter=@ember/dashboard --cache-dir=.turbo
+
+  - name: Build backend
+    run: pnpm turbo run build --filter=@ember/back-end --cache-dir=.turbo
+
+e2e-test: name: Run E2E Tests runs-on: ubuntu-latest if: github.event_name != 'push' # Skip on push to main steps: - name: Checkout repo uses: actions/checkout@v4 with: fetch-depth: 0
+
+- name: Cache Turbo
+    uses: actions/cache@v4
+    with:
+      path: .turbo
+      key: ${{ runner.os }}-turbo-e2e-${{ github.sha }}
+      restore-keys: |
+        ${{ runner.os }}-turbo-e2e-main
+
+  - name: Build dashboard
+    run: pnpm turbo run build --filter=@ember/dashboard --cache-dir=.turbo
+
+  - name: Build backend
+    run: pnpm turbo run build --filter=@ember/back-end --cache-dir=.turbo
+
+  - name: Start servers
+    run: |
+      pnpm --filter back-end dev &
+      pnpm --filter mock-slal-server dev &
+      pnpm serve apps/dashboard/dist -l 8081 &
+      sleep 15
+
+  - name: Run E2E Test Suite
+    run: pnpm --filter tests/e2e test:pipeline --cache-dir=.turbo
+
