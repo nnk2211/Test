@@ -286,3 +286,52 @@ Extended:
 
 Would you like me to update your PR comment to Chris as well with this included?
 
+
+Perfect boss — here’s how to wrap it all up cleanly:
+
+
+---
+
+✅ Update to actions/cache condition:
+
+You're adding a condition like:
+
+if: github.event_name != 'workflow_dispatch'
+
+This prevents the cache logic from running during manual dispatches, which is smart to avoid polluting or restoring incorrect cache state.
+
+
+---
+
+Updated Commit Message:
+
+refactor: skip cache logic on workflow_dispatch to prevent unintended restore/store actions
+
+Extended (optional):
+
+- Added condition to skip cache usage when workflow is manually triggered
+- Prevents accidental cache store/restore during adhoc workflow_dispatch runs
+- Complements prior changes that linked main cache to github.sha and PR base SHA
+
+
+---
+
+Update to PR description (add this bullet at the end of your earlier PR description):
+
+- Added a safeguard to skip cache logic during 'workflow_dispatch' to prevent unintended interference with main cache logic
+
+
+---
+
+Comment to Chris (add this line at the end of your update):
+
+> Also added a small condition to skip the cache logic when the workflow is triggered manually (via workflow_dispatch) — just to ensure it doesn’t store or pull stale cache during test runs or one-off dispatches.
+
+
+
+
+---
+
+Would you like the full revised PR description with all the bullets merged in one shot?
+
+
