@@ -140,4 +140,33 @@ Let me know if you feel this could be improved!
 
 Would you like a shorter or more casual variation too?
 
+Perfect — here’s the revised reply that removes the part about "preventing merge changes" and focuses purely on avoiding unnecessary E2E runs:
+
+
+---
+
+Thanks, Chris! Totally agree — Turbo’s hashing mechanism does a solid job with partial cache hits based on file content.
+
+What we’re aiming to solve here is:
+When a PR is approved, the E2E suite runs against a merged view with main. That’s expected and useful.
+But if there were unrelated changes in main, it could invalidate the cache even though the PR itself hasn’t touched relevant files — leading to unnecessary E2E runs.
+
+So to keep things efficient:
+
+We store a Turbo cache keyed with main on every push to main
+
+PR approval runs use that as the restore key
+
+
+This keeps the cache aligned with the version of main the PR runs against — avoiding accidental reruns where there’s no meaningful change.
+
+Let me know what you think!
+
+
+---
+
+Want a shorter version for a quick comment too?
+
+
+
 
