@@ -167,6 +167,14 @@ Let me know what you think!
 
 Want a shorter version for a quick comment too?
 
+Got it! Here's the revised sentence to add to your reply to Chris:
+
+> The E2E suite runs against a merged view with main, which is expected — and just to note, the checkout step checks out the temporary merge commit created by GitHub (not the PR branch’s latest commit), so any new changes on main get included in the build and cache behavior.
+
+
+
+Let me know if you want to simplify it even further.
+
 
 
 
