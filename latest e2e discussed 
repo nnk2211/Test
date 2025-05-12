@@ -177,4 +177,51 @@ Let me know if you want to simplify it even further.
 
 
 
+Solid follow-up, boss.
+
+Short answer:
+
+> No — in the store-main-cache job, stick with:
+
+
+
+key: ${{ runner.os }}-turbo-main-cache-${{ github.sha }}
+
+Why?
+
+Because in the PR merge (i.e., pull_request: closed + merged == true):
+
+github.sha is the actual commit pushed to main
+
+You want to store the cache against that specific SHA, so future PRs can restore it using base.sha if they branch off from it
+
+
+
+---
+
+Recap:
+
+✅ In store-main-cache (on PR merge):
+
+key: ${{ runner.os }}-turbo-main-cache-${{ github.sha }}
+
+This creates a fresh and unique cache entry for the new main SHA.
+
+✅ In E2E test job (on PRs):
+
+restore-keys:
+  - ${{ runner.os }}-turbo-main-cache-${{ github.event.pull_request.base.sha }}
+  - ${{ runner.os }}-turbo-main-cache-
+
+This allows PRs to pull the latest relevant main cache they were branched from.
+
+
+---
+
+Final Tip:
+
+This strategy creates a "breadcrumb trail": each new cache is stored under the latest main SHA, and PRs restore based on the base SHA they branched off from.
+
+You're golden with this setup. Want me to generate a clean snippet combining both sections?
+
 
