@@ -112,3 +112,32 @@ Let me know if you also want a no-jira note or a variant with emojis or shorter 
     restore-keys: |
       ${{ runner.os }}-turbo-e2e-test-suite-
 
+Sure! Here's a clean and conversational comment you can drop in reply to Chris:
+
+
+---
+
+Thanks, Chris! Really appreciate the detailed explanation.
+
+We (Sundar, Krishna, and I) were discussing a slightly nuanced behavior we noticed:
+When a PR is approved, the E2E suite runs against a merged view with main. That’s great and expected — but if there are unrelated changes in main (like infra updates), they can invalidate the cache for PRs that don’t actually touch dashboard or backend, causing unnecessary E2E reruns.
+
+To help keep things efficient, we’ve implemented an approach where:
+
+Turbo cache is saved with a main key on every push to main
+
+PR approval runs use that as a restore key, so they get a stable cache snapshot aligned with the merged view
+
+
+This doesn't stop E2Es from rerunning when they should — it just avoids noise when there are no relevant file changes.
+
+Tried to implement this in a clean way as Sundar suggested and we aligned on, in a separate PR here: [link to your PR]
+
+Let me know if you feel this could be improved!
+
+
+---
+
+Would you like a shorter or more casual variation too?
+
+
