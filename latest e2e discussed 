@@ -53,3 +53,53 @@ jobs:
           github.event_name != 'pull_request_review' || github.event.review.state == 'approved'
         )
 
+
+
+Great! Here's a full set for your PR:
+
+
+---
+
+PR Title:
+
+feat(ci): store Turbo cache to main key on push to avoid unnecessary E2E reruns
+
+
+---
+
+Commit Message (single line):
+
+store Turbo build cache under main key on push to improve E2E suite efficiency
+
+
+---
+
+PR Description:
+
+Implemented a CI enhancement to improve Turbo cache reliability and avoid unnecessary E2E test runs.
+
+What’s changed:
+
+Added a push trigger to the workflow
+
+Introduced a new store-main-cache job that runs only on push to main
+
+This job stores the current .turbo directory using a turbo-e2e-main cache key
+
+
+Why:
+
+E2E tests on PR approval run against the merged view with main, which is expected.
+
+However, if unrelated changes land in main, it could cause the E2E suite to re-run on PRs that don’t touch dashboard/backend, just because the cache was invalid.
+
+This change ensures we always have a stable main cache available for restore, making Turbo smarter and the E2E pipeline more efficient.
+
+
+This approach was aligned with feedback from Sundar and Krishna. Let me know if anything can be refined!
+
+
+---
+
+Let me know if you also want a no-jira note or a variant with emojis or shorter format.
+
